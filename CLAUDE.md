@@ -50,6 +50,9 @@ Personal deployment notes live in CLAUDE.local.md (gitignored) — never commit 
 - `.github/workflows/ci.yml` — tests, then native amd64/arm64 image build + container smoke test
   (200 on secret path, 404 elsewhere, secret not in log). Tag `vX.Y.Z` (= config.yaml version)
   pushes ghcr `{amd64,aarch64}-carryon:X.Y.Z` (HA) and multi-arch `carryon:X.Y.Z/latest` (Docker).
+  config.yaml has `image:`, so HA pulls instead of building. Release = bump version, push main,
+  tag right away: HA offers the update as soon as main changes, and pulls fail until CI (~5 min)
+  has pushed that version.
 
 ## Security decisions
 - Auth = long random **secret path** (`/<secret>/mcp`). Reason: Claude custom connectors
@@ -66,13 +69,11 @@ Personal deployment notes live in CLAUDE.local.md (gitignored) — never commit 
 - v0.4.0: standalone Docker (env config), CI + ghcr images, synthetic-export tests.
 
 ## Next steps (in order)
-1. Publish: after the first tagged release is on ghcr and the packages are public, add
-   `image: ghcr.io/shenyinzhe/{arch}-carryon` to config.yaml (until then HA builds on-device).
-2. Vector search: multilingual model (bge-m3 or multilingual-e5-small; NOT all-MiniLM — poor
+1. Vector search: multilingual model (bge-m3 or multilingual-e5-small; NOT all-MiniLM — poor
    on Chinese). Build embeddings on a PC, ship the db; box only embeds queries (int8 ONNX).
    sqlite-vec for storage; hybrid rank with FTS (e.g. RRF).
-3. OAuth (DCR) to replace the secret path.
-4. `save_note` tool for writing conclusions back (portable memory, not just history).
+2. OAuth (DCR) to replace the secret path.
+3. `save_note` tool for writing conclusions back (portable memory, not just history).
 
 ## Prior art checked (none fits)
 MyChatArchive (no Gemini, English-only embeddings, AGPL), kept (browser-extension capture,

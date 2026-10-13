@@ -12,7 +12,7 @@ claude.ai 和 chatgpt.com 的网页端连接器即可直接访问。
 [![添加仓库到 Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fshenyinzhe%2Fcarryon)
 
 或在加载项商店 → 右上角 ⋮ → 仓库，添加 `https://github.com/shenyinzhe/carryon`，然后安装 **Carry-On**
-（首次在设备上构建，几分钟）。
+（直接拉取预构建镜像，几秒完成）。
 
 配置页填 `secret`：在电脑上运行 `python -c "import secrets;print(secrets.token_urlsafe(32))"` 生成。启动。
 
