@@ -42,7 +42,14 @@ Personal deployment notes live in CLAUDE.local.md (gitignored) — never commit 
   Secret read from `$CARRYON_SECRET` or `/data/options.json`.
 - `carryon/carryon/cli.py` — `cd carryon && python -m carryon.cli --db x.db import|search|fetch|stats`.
 - `deploy.sh` — dev loop: tar `carryon/` over `ssh $CARRYON_SSH_HOST` to /addons/carryon, then
-  `ha apps install|update|rebuild local_carryon`.
+  `ha apps install|update|rebuild local_carryon`. Strips `image:` from config.yaml so the local
+  copy builds from source instead of pulling the release.
+- Same image runs standalone (`compose.yaml`): add-on options ↔ env `CARRYON_<OPTION>` (env wins,
+  read in run.sh / server.py). Dockerfile arch: `BUILD_ARCH` (HA builder) or `TARGETARCH` (docker).
+- `tests/` — pytest on synthetic exports of all three formats + MCP over HTTP (`pytest` from root).
+- `.github/workflows/ci.yml` — tests, then native amd64/arm64 image build + container smoke test
+  (200 on secret path, 404 elsewhere, secret not in log). Tag `vX.Y.Z` (= config.yaml version)
+  pushes ghcr `{amd64,aarch64}-carryon:X.Y.Z` (HA) and multi-arch `carryon:X.Y.Z/latest` (Docker).
 
 ## Security decisions
 - Auth = long random **secret path** (`/<secret>/mcp`). Reason: Claude custom connectors
@@ -56,9 +63,11 @@ Personal deployment notes live in CLAUDE.local.md (gitignored) — never commit 
   ChatGPT (1403 convs, 11093 msgs). Combined db ~131 MB, ~216 MB RAM on an aarch64 box.
 - Claude connector verified against a public Funnel URL.
 - v0.3.0: renamed Chat History Hub → Carry-On, restructured as an add-on repository.
+- v0.4.0: standalone Docker (env config), CI + ghcr images, synthetic-export tests.
 
 ## Next steps (in order)
-1. Publish: CI building multi-arch images to ghcr (`image:` in config.yaml), synthetic-export tests.
+1. Publish: after the first tagged release is on ghcr and the packages are public, add
+   `image: ghcr.io/shenyinzhe/{arch}-carryon` to config.yaml (until then HA builds on-device).
 2. Vector search: multilingual model (bge-m3 or multilingual-e5-small; NOT all-MiniLM — poor
    on Chinese). Build embeddings on a PC, ship the db; box only embeds queries (int8 ONNX).
    sqlite-vec for storage; hybrid rank with FTS (e.g. RRF).

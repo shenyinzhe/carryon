@@ -3,7 +3,7 @@
 **换 AI 订阅，不丢记忆。** 把 ChatGPT / Claude / Gemini 的官方导出合并成一个可搜索的库，放在自己的设备上，
 通过 [MCP](https://modelcontextprotocol.io) 提供给任何一家 AI：今天用哪家，都能查到你和其他几家聊过什么。
 
-以 Home Assistant add-on 形式运行（aarch64 / amd64），内置可选的 Tailscale Funnel，无需域名和端口转发，
+以 Home Assistant add-on 或普通 Docker 容器运行（aarch64 / amd64），内置可选的 Tailscale Funnel，无需域名和端口转发，
 claude.ai 和 chatgpt.com 的网页端连接器即可直接访问。
 
 [English](README.md)
@@ -15,6 +15,16 @@ claude.ai 和 chatgpt.com 的网页端连接器即可直接访问。
 （首次在设备上构建，几分钟）。
 
 配置页填 `secret`：在电脑上运行 `python -c "import secrets;print(secrets.token_urlsafe(32))"` 生成。启动。
+
+**不用 Home Assistant**：用 Docker 运行。
+```bash
+curl -O https://raw.githubusercontent.com/shenyinzhe/carryon/main/compose.yaml
+echo "CARRYON_SECRET=$(python3 -c 'import secrets;print(secrets.token_urlsafe(32))')" > .env
+docker compose up -d
+```
+导出的 zip 放进 `./share/inbox/`，本机地址是 `http://127.0.0.1:8765/<secret>/mcp`。下文的 add-on 选项对应环境变量
+`CARRYON_SECRET`、`CARRYON_TAILSCALE_FUNNEL`、`CARRYON_TAILSCALE_HOSTNAME`（写进 `.env`），
+Tailscale 登录链接在 `docker compose logs` 里。
 
 ## 2. 导入记录
 把导出的 zip 原样放进 `share/carryon/inbox/`（Samba 的 `share` 目录）。
@@ -46,8 +56,9 @@ tailscaled 的输出被丢弃（可能含请求路径，即 secret）。**不要
 
 ## 开发
 ```bash
+pip install -r carryon/requirements.txt pytest
+pytest                      # 三家格式的合成导出，不含个人数据
 cd carryon
-pip install -r requirements.txt
 python -m carryon.cli --db carryon.db import chatgpt-export.zip claude-export.zip takeout.zip
 python -m carryon.cli --db carryon.db search "向量数据库"
 ```

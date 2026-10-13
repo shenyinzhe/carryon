@@ -1,0 +1,18 @@
+# Carry-On without Home Assistant.
+#   echo "CARRYON_SECRET=$(python3 -c 'import secrets;print(secrets.token_urlsafe(32))')" > .env
+#   docker compose up -d
+# Drop export zips into ./share/inbox; the database lives in ./data.
+services:
+  carryon:
+    image: ghcr.io/shenyinzhe/carryon:latest
+    restart: unless-stopped
+    environment:
+      CARRYON_SECRET: ${CARRYON_SECRET:?put CARRYON_SECRET (32+ random chars) in .env}
+      # Built-in Tailscale Funnel for a public HTTPS URL; the login link appears in `docker compose logs`.
+      CARRYON_TAILSCALE_FUNNEL: ${CARRYON_TAILSCALE_FUNNEL:-false}
+      CARRYON_TAILSCALE_HOSTNAME: ${CARRYON_TAILSCALE_HOSTNAME:-carryon}
+    volumes:
+      - ./data:/data              # carryon.db + Tailscale state
+      - ./share:/share/carryon    # inbox/ and imported/
+    ports:
+      - "127.0.0.1:8765:8765"     # local only; reach it from outside via Funnel or your own reverse proxy

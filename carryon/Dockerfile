@@ -1,13 +1,15 @@
 FROM python:3.12-slim
 
 # Tailscale for optional public access via Funnel (pinned, checksum-verified).
-ARG BUILD_ARCH=aarch64
+# BUILD_ARCH is passed by the Home Assistant builder, TARGETARCH by docker build / buildx.
+ARG BUILD_ARCH
+ARG TARGETARCH
 ARG TAILSCALE_VERSION=1.102.3
 RUN set -e; \
-    case "$BUILD_ARCH" in \
-      aarch64) a=arm64; sum=a0fa1b154af8c61f862a2259f559f7396d96c0225f4a863eae2333e1546bbe25 ;; \
-      amd64)   a=amd64; sum=36ddd9b51be57ffc2990cf76323cfa13643bfbb1b8a969f6183fa164741cdef5 ;; \
-      *) echo "unsupported arch $BUILD_ARCH"; exit 1 ;; \
+    case "${BUILD_ARCH:-$TARGETARCH}" in \
+      aarch64|arm64) a=arm64; sum=a0fa1b154af8c61f862a2259f559f7396d96c0225f4a863eae2333e1546bbe25 ;; \
+      amd64)         a=amd64; sum=36ddd9b51be57ffc2990cf76323cfa13643bfbb1b8a969f6183fa164741cdef5 ;; \
+      *) echo "unsupported arch ${BUILD_ARCH:-$TARGETARCH}"; exit 1 ;; \
     esac; \
     python -c "import sys, urllib.request; urllib.request.urlretrieve(sys.argv[1], '/tmp/ts.tgz')" \
       "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_${a}.tgz"; \
@@ -23,4 +25,5 @@ COPY carryon/ ./carryon/
 COPY run.sh .
 
 ENV CARRYON_DATA=/data CARRYON_INBOX=/share/carryon/inbox PYTHONUNBUFFERED=1
+EXPOSE 8765
 CMD ["sh", "/app/run.sh"]
