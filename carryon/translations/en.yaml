@@ -1,0 +1,17 @@
+configuration:
+  secret:
+    name: Secret
+    description: >-
+      Random string (32+ chars) that becomes part of the endpoint URL
+      https://<host>/<secret>/mcp. The whole URL works like a password.
+      Generate one with: python -c "import secrets;print(secrets.token_urlsafe(32))"
+  tailscale_funnel:
+    name: Tailscale Funnel
+    description: >-
+      Publish the MCP endpoint on the internet through Tailscale Funnel (free, no domain
+      or port forwarding needed). The first start prints a Tailscale login URL in the log.
+  tailscale_hostname:
+    name: Tailscale hostname
+    description: Device name in your tailnet; the endpoint becomes https://<hostname>.<tailnet>.ts.net
+network:
+  8765/tcp: MCP endpoint (keep unmapped; use Tailscale Funnel)

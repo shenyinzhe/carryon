@@ -1,0 +1,8 @@
+.venv/
+*.db
+*.db-*
+*.zip
+.DS_Store
+__pycache__/
+exports/
+CLAUDE.local.md

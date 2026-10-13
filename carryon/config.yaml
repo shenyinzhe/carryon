@@ -1,0 +1,26 @@
+name: Carry-On
+version: "0.3.0"
+slug: carryon
+description: Take your AI memory with you — your ChatGPT / Claude / Gemini history, searchable from any assistant over MCP
+url: https://github.com/shenyinzhe/carryon
+arch:
+  - aarch64
+  - amd64
+init: false
+startup: application
+boot: auto
+watchdog: tcp://[HOST]:[PORT:8765]
+map:
+  - share:rw
+ports:
+  8765/tcp: null   # not exposed on the LAN; public access via built-in Tailscale Funnel
+ports_description:
+  8765/tcp: MCP endpoint (keep unmapped; use Tailscale Funnel)
+options:
+  secret: ""
+  tailscale_funnel: false
+  tailscale_hostname: carryon
+schema:
+  secret: password
+  tailscale_funnel: bool
+  tailscale_hostname: str
